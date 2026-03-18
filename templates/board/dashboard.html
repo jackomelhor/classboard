@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+{% if selected_workspace %}
+<section class="dashboard-topbar">
+    <div>
+        <div class="topbar-line">🏠 {{ selected_workspace.name }} {% if selected_workspace.school_name %}| {{ selected_workspace.school_name }}{% endif %}</div>
+        <div class="topbar-subline">Código de convite: {{ selected_workspace.invite_code }} • Seu papel: {{ selected_membership.get_role_display }}</div>
+    </div>
+    <div class="workspace-switcher">
+        {% for workspace in workspaces %}
+            <a href="{% url 'dashboard' %}?workspace={{ workspace.id }}" class="workspace-chip {% if workspace.id == selected_workspace.id %}active{% endif %}">{{ workspace.name }}</a>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="quick-stats">
+    <div class="summary-box blue">
+        <strong>{{ summary.pendentes|default:0 }}</strong>
+        <span>Pendentes na semana</span>
+    </div>
+    <div class="summary-box orange">
+        <strong>{{ summary.atrasadas|default:0 }}</strong>
+        <span>Atrasadas</span>
+    </div>
+    <div class="summary-box green">
+        <strong>{{ summary.provas_semana|default:0 }}</strong>
+        <span>Provas na semana</span>
+    </div>
+    <div class="summary-box dark">
+        <strong>{{ summary.taxa_conclusao|default:0 }}%</strong>
+        <span>Conclusão da semana</span>
+    </div>
+</section>
+
+<section class="dashboard-grid">
+    <article class="card card-wide">
+        <div class="section-head">
+            <h2>Hoje</h2>
+            <a href="{% url 'create_task' %}?workspace={{ selected_workspace.id }}" class="button button-secondary">Nova tarefa</a>
+        </div>
+        {% if tasks_today %}
+            <ul class="item-list">
+                {% for task in tasks_today %}
+                    <li>
+                        <div>
+                            <a href="{% url 'task_detail' task.id %}" class="table-link">{{ task.title }}</a>
+                            <small>{{ task.subject }}</small>
+                        </div>
+                        <span class="badge status-{{ task.status }}">{{ task.get_status_display }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="muted">Nenhuma tarefa para hoje.</p>
+        {% endif %}
+    </article>
+
+    <article class="card">
+        <h2>Próximas provas</h2>
+        {% if upcoming_exams %}
+            <ul class="item-list compact-list">
+                {% for task in upcoming_exams %}
+                    <li>
+                        <div>
+                            <a href="{% url 'task_detail' task.id %}" class="table-link">{{ task.title }}</a>
+                            <small>{{ task.due_date|date:'d/m/Y' }}</small>
+                        </div>
+                        <span class="badge priority-{{ task.priority }}">{{ task.get_priority_display }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="muted">Sem provas próximas.</p>
+        {% endif %}
+    </article>
+
+    <article class="card">
+        <h2>Tarefas pendentes</h2>
+        {% if pending_tasks %}
+            <ul class="item-list compact-list">
+                {% for task in pending_tasks %}
+                    <li>
+                        <div>
+                            <a href="{% url 'task_detail' task.id %}" class="table-link">{{ task.title }}</a>
+                            <small>{{ task.subject }}</small>
+                        </div>
+                        <span class="badge priority-{{ task.priority }}">{{ task.get_priority_display }}</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="muted">Nenhuma tarefa pendente.</p>
+        {% endif %}
+    </article>
+
+    <article class="card">
+        <h2>Tarefas atrasadas</h2>
+        {% if overdue_tasks %}
+            <ul class="item-list compact-list">
+                {% for task in overdue_tasks %}
+                    <li>
+                        <div>
+                            <a href="{% url 'task_detail' task.id %}" class="table-link">{{ task.title }}</a>
+                            <small>{{ task.subject }}</small>
+                        </div>
+                        <span class="badge badge-danger">Atrasada</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="muted">Nenhuma tarefa atrasada.</p>
+        {% endif %}
+    </article>
+
+    <article class="card card-wide">
+        <div class="section-head">
+            <h2>Visão rápida</h2>
+            <div class="inline-actions">
+                <a href="{% url 'task_list' %}?workspace={{ selected_workspace.id }}" class="button button-secondary">Ver todas as tarefas</a>
+                <a href="{% url 'workspace_members' %}?workspace={{ selected_workspace.id }}" class="button button-secondary">Ver membros</a>
+            </div>
+        </div>
+        {% if recent_tasks %}
+            <div class="table-wrap">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Título</th>
+                            <th>Matéria</th>
+                            <th>Prazo</th>
+                            <th>Status</th>
+                            <th>Autor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for task in recent_tasks %}
+                            <tr class="{% if task.is_overdue %}row-overdue{% endif %}">
+                                <td><a href="{% url 'task_detail' task.id %}" class="table-link">{{ task.title }}</a></td>
+                                <td>{{ task.subject }}</td>
+                                <td>{{ task.due_date|date:'d/m/Y' }}</td>
+                                <td><span class="badge status-{{ task.status }}">{{ task.get_status_display }}</span></td>
+                                <td>{{ task.author.first_name|default:task.author.username }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="muted">Ainda não há tarefas cadastradas neste workspace.</p>
+        {% endif %}
+    </article>
+</section>
+{% else %}
+<section class="empty-state">
+    <h1>Você ainda não participa de nenhum workspace.</h1>
+    <p>Crie sua primeira turma ou grupo, ou entre com um código de convite.</p>
+    <div class="hero-actions">
+        <a href="{% url 'create_workspace' %}" class="button button-primary">Criar workspace</a>
+        <a href="{% url 'join_workspace' %}" class="button button-secondary">Entrar com código</a>
+    </div>
+</section>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}ClassBoard | Início{% endblock %}
+{% block content %}
+<section class="hero">
+    <div class="hero-card">
+        <span class="pill">Versão 0.3</span>
+        <h1>Organize sua turma em um só lugar.</h1>
+        <p>Agora com dashboard mais completo, filtros, checklist, agenda, membros e convite por código.</p>
+        <div class="hero-actions">
+            <a href="{% url 'register' %}" class="button button-primary">Começar agora</a>
+            <a href="{% url 'login' %}" class="button button-secondary">Já tenho conta</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}Nova tarefa{% endblock %}
+{% block content %}
+<section class="form-card">
+    <h1>Nova tarefa</h1>
+    <p class="muted">Workspace atual: <strong>{{ selected_workspace.name }}</strong></p>
+    <form method="post" class="styled-form">
+        {% csrf_token %}
+        <input type="hidden" name="workspace_id" value="{{ selected_workspace.id }}">
+        {{ form.as_p }}
+        <button type="submit" class="button button-primary">Salvar tarefa</button>
+    </form>
+</section>
+{% endblock %}

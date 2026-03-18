@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block title %}{{ task.title }}{% endblock %}
+{% block content %}
+<section class="dashboard-topbar">
+    <div>
+        <div class="topbar-line">📘 {{ task.title }}</div>
+        <div class="topbar-subline">{{ task.workspace.name }} • {{ task.subject }}</div>
+    </div>
+    <div class="workspace-switcher">
+        {% if can_manage %}
+            <a href="{% url 'task_edit' task.id %}" class="workspace-chip active">Editar</a>
+            <a href="{% url 'task_delete' task.id %}" class="workspace-chip">Excluir</a>
+        {% endif %}
+        <a href="{% url 'task_list' %}?workspace={{ task.workspace.id }}" class="workspace-chip">Voltar para tarefas</a>
+    </div>
+</section>
+
+<section class="dashboard-grid task-detail-grid">
+    <article class="card">
+        <h2>Informações</h2>
+        <div class="detail-list">
+            <div><strong>Tipo:</strong> {{ task.get_task_type_display }}</div>
+            <div><strong>Prazo:</strong> {{ task.due_date|date:'d/m/Y' }}</div>
+            <div><strong>Prioridade:</strong> <span class="badge priority-{{ task.priority }}">{{ task.get_priority_display }}</span></div>
+            <div><strong>Status:</strong> <span class="badge status-{{ task.status }}">{{ task.get_status_display }}</span></div>
+            <div><strong>Autor:</strong> {{ task.author.first_name|default:task.author.username }}</div>
+            <div><strong>Última atualização:</strong> {{ task.updated_at|date:'d/m/Y H:i' }}</div>
+        </div>
+        <h3>Descrição</h3>
+        <p class="detail-text">{{ task.description|default:'Sem descrição cadastrada.' }}</p>
+    </article>
+
+    <article class="card">
+        <div class="section-head">
+            <h2>Checklist</h2>
+            <span class="progress-pill">{{ checklist_progress }}%</span>
+        </div>
+
+        {% if checklist_items %}
+            <ul class="checklist-list">
+                {% for item in checklist_items %}
+                    <li class="{% if item.is_done %}done{% endif %}">
+                        <form method="post" action="{% url 'toggle_checklist_item' item.id %}" class="inline-form full-width-form">
+                            {% csrf_token %}
+                            <button type="submit" class="check-toggle">{% if item.is_done %}✓{% else %}○{% endif %}</button>
+                            <span>{{ item.title }}</span>
+                        </form>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="muted">Nenhum item no checklist ainda.</p>
+        {% endif %}
+
+        {% if can_manage %}
+            <form method="post" action="{% url 'add_checklist_item' task.id %}" class="styled-form compact-form">
+                {% csrf_token %}
+                {{ checklist_form.as_p }}
+                <button type="submit" class="button button-primary">Adicionar item</button>
+            </form>
+        {% endif %}
+    </article>
+</section>
+{% endblock %}
