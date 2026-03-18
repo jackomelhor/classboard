@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% block title %}Membros{% endblock %}
+{% block content %}
+<section class="dashboard-topbar">
+    <div>
+        <div class="topbar-line">👥 {{ selected_workspace.name }}</div>
+        <div class="topbar-subline">Código de convite: <strong id="inviteCodeText">{{ selected_workspace.invite_code }}</strong></div>
+    </div>
+    <div class="workspace-switcher">
+        {% for workspace in workspaces %}
+            <a href="{% url 'workspace_members' %}?workspace={{ workspace.id }}" class="workspace-chip {% if workspace.id == selected_workspace.id %}active{% endif %}">{{ workspace.name }}</a>
+        {% endfor %}
+        <button type="button" class="workspace-chip copy-button" data-copy-target="inviteCodeText">Copiar código</button>
+    </div>
+</section>
+
+<section class="dashboard-grid members-grid">
+    <article class="card">
+        <h2>Sobre o workspace</h2>
+        <div class="detail-list">
+            <div><strong>Tipo:</strong> {{ selected_workspace.get_workspace_type_display }}</div>
+            <div><strong>Escola:</strong> {{ selected_workspace.school_name|default:'Não informada' }}</div>
+            <div><strong>Descrição:</strong> {{ selected_workspace.description|default:'Sem descrição' }}</div>
+            <div><strong>Seu papel:</strong> {{ selected_membership.get_role_display }}</div>
+        </div>
+
+        {% if selected_membership.role == 'owner' %}
+            <form method="post" action="{% url 'regenerate_invite_code' selected_workspace.id %}" class="inline-form top-space">
+                {% csrf_token %}
+                <button type="submit" class="button button-secondary">Gerar novo código</button>
+            </form>
+        {% endif %}
+    </article>
+
+    <article class="card card-wide">
+        <div class="section-head">
+            <h2>Membros</h2>
+            <span class="badge badge-neutral">{{ memberships|length }} pessoas</span>
+        </div>
+
+        <div class="table-wrap">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Usuário</th>
+                        <th>Email</th>
+                        <th>Papel</th>
+                        <th>Entrada</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for membership in memberships %}
+                        <tr>
+                            <td>{{ membership.user.first_name|default:'Sem nome' }}</td>
+                            <td>{{ membership.user.username }}</td>
+                            <td>{{ membership.user.email|default:'-' }}</td>
+                            <td>
+                                <span class="badge {% if membership.role == 'owner' %}badge-owner{% elif membership.role == 'admin' %}badge-admin{% else %}badge-neutral{% endif %}">
+                                    {{ membership.get_role_display }}
+                                </span>
+                            </td>
+                            <td>{{ membership.joined_at|date:'d/m/Y' }}</td>
+                            <td>
+                                {% if selected_membership.role == 'owner' and membership.role != 'owner' %}
+                                    <div class="member-actions-stack">
+                                        <form method="post" action="{% url 'update_member_role' membership.id %}" class="inline-form role-form">
+                                            {% csrf_token %}
+                                            <select name="role">
+                                                <option value="admin" {% if membership.role == 'admin' %}selected{% endif %}>Admin</option>
+                                                <option value="member" {% if membership.role == 'member' %}selected{% endif %}>Member</option>
+                                            </select>
+                                            <button type="submit" class="table-action">Salvar papel</button>
+                                        </form>
+                                    </div>
+                                {% endif %}
+
+                                {% if membership.role != 'owner' and selected_membership.role == 'owner' or membership.role != 'owner' and selected_membership.role == 'admin' %}
+                                    <form method="post" action="{% url 'remove_member' membership.id %}" class="inline-form">
+                                        {% csrf_token %}
+                                        <button type="submit" class="table-action table-danger">Remover</button>
+                                    </form>
+                                {% else %}
+                                    <span class="muted">-</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </article>
+</section>
+{% endblock %}

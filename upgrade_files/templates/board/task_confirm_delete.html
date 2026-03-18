@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}Excluir tarefa{% endblock %}
+{% block content %}
+<section class="form-card narrow-card">
+    <h1>Excluir tarefa</h1>
+    <p>Você tem certeza que deseja excluir <strong>{{ task.title }}</strong>?</p>
+    <p class="muted">Essa ação remove a tarefa e seus itens de checklist.</p>
+    <form method="post" class="form-actions">
+        {% csrf_token %}
+        <button type="submit" class="button button-danger">Excluir definitivamente</button>
+        <a href="{% url 'task_detail' task.id %}" class="button button-secondary">Cancelar</a>
+    </form>
+</section>
+{% endblock %}

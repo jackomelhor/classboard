@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% block title %}Tarefas{% endblock %}
+{% block content %}
+<section class="dashboard-topbar">
+    <div>
+        <div class="topbar-line">🗂️ {{ selected_workspace.name }}</div>
+        <div class="topbar-subline">Lista completa de tarefas com filtros</div>
+    </div>
+    <div class="workspace-switcher">
+        {% for workspace in workspaces %}
+            <a href="{% url 'task_list' %}?workspace={{ workspace.id }}" class="workspace-chip {% if workspace.id == selected_workspace.id %}active{% endif %}">{{ workspace.name }}</a>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="card filter-card">
+    <form method="get" class="filter-grid">
+        <input type="hidden" name="workspace" value="{{ selected_workspace.id }}">
+        <div>
+            <label>Buscar</label>
+            <input type="text" name="q" value="{{ filters.q }}" placeholder="Título, descrição ou matéria">
+        </div>
+        <div>
+            <label>Status</label>
+            <select name="status">
+                <option value="">Todos</option>
+                {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if filters.status == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label>Prioridade</label>
+            <select name="priority">
+                <option value="">Todas</option>
+                {% for value, label in priority_choices %}
+                    <option value="{{ value }}" {% if filters.priority == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label>Tipo</label>
+            <select name="task_type">
+                <option value="">Todos</option>
+                {% for value, label in task_type_choices %}
+                    <option value="{{ value }}" {% if filters.task_type == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label>Matéria</label>
+            <select name="subject">
+                <option value="">Todas</option>
+                {% for item in subjects %}
+                    <option value="{{ item }}" {% if filters.subject == item %}selected{% endif %}>{{ item }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="checkbox-line">
+            <label>
+                <input type="checkbox" name="only_overdue" value="1" {% if filters.only_overdue %}checked{% endif %}>
+                Mostrar só atrasadas
+            </label>
+        </div>
+        <div class="filter-actions">
+            <button type="submit" class="button button-primary">Filtrar</button>
+            <a href="{% url 'task_list' %}?workspace={{ selected_workspace.id }}" class="button button-secondary">Limpar</a>
+        </div>
+    </form>
+</section>
+
+<section class="card">
+    <div class="section-head">
+        <h1>Tarefas</h1>
+        <a href="{% url 'create_task' %}?workspace={{ selected_workspace.id }}" class="button button-primary">Nova tarefa</a>
+    </div>
+
+    {% if tasks %}
+        <div class="table-wrap">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Título</th>
+                        <th>Matéria</th>
+                        <th>Tipo</th>
+                        <th>Prazo</th>
+                        <th>Prioridade</th>
+                        <th>Status</th>
+                        <th>Autor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for task in tasks %}
+                        <tr class="{% if task.is_overdue %}row-overdue{% endif %}">
+                            <td>
+                                <a href="{% url 'task_detail' task.id %}" class="table-link">{{ task.title }}</a>
+                            </td>
+                            <td>{{ task.subject }}</td>
+                            <td><span class="badge badge-neutral">{{ task.get_task_type_display }}</span></td>
+                            <td>{{ task.due_date|date:'d/m/Y' }}</td>
+                            <td><span class="badge priority-{{ task.priority }}">{{ task.get_priority_display }}</span></td>
+                            <td><span class="badge status-{{ task.status }}">{{ task.get_status_display }}</span></td>
+                            <td>{{ task.author.first_name|default:task.author.username }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="muted">Nenhuma tarefa encontrada com os filtros atuais.</p>
+    {% endif %}
+</section>
+{% endblock %}

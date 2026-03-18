@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}Novo workspace{% endblock %}
+{% block content %}
+<section class="form-card">
+    <h1>Criar workspace</h1>
+    <p class="muted">Ainda sem pagamento. Você controla tudo pelo admin, pelo papel de owner e pelo código de convite.</p>
+    <form method="post" class="styled-form">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="button button-primary">Criar workspace</button>
+    </form>
+</section>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}Criar conta{% endblock %}
+{% block content %}
+<section class="form-card narrow-card">
+    <h1>Criar conta</h1>
+    <form method="post" class="styled-form">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="button button-primary">Criar conta</button>
+    </form>
+</section>
+{% endblock %}

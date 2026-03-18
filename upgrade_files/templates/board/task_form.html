@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}{{ page_title }}{% endblock %}
+{% block content %}
+<section class="form-card">
+    <h1>{{ page_title }}</h1>
+    <p class="muted">Workspace atual: <strong>{{ selected_workspace.name }}</strong></p>
+    <form method="post" class="styled-form">
+        {% csrf_token %}
+        <input type="hidden" name="workspace_id" value="{{ selected_workspace.id }}">
+        {{ form.as_p }}
+        <div class="form-actions">
+            <button type="submit" class="button button-primary">{{ submit_label }}</button>
+            <a href="{% if task %}{% url 'task_detail' task.id %}{% else %}{% url 'task_list' %}?workspace={{ selected_workspace.id }}{% endif %}" class="button button-secondary">Cancelar</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

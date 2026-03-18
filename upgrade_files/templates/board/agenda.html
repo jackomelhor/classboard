@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Agenda{% endblock %}
+{% block content %}
+<section class="dashboard-topbar">
+    <div>
+        <div class="topbar-line">🗓️ {{ selected_workspace.name }}</div>
+        <div class="topbar-subline">Agenda dos próximos 30 dias</div>
+    </div>
+    <div class="workspace-switcher">
+        {% for workspace in workspaces %}
+            <a href="{% url 'agenda' %}?workspace={{ workspace.id }}" class="workspace-chip {% if workspace.id == selected_workspace.id %}active{% endif %}">{{ workspace.name }}</a>
+        {% endfor %}
+    </div>
+</section>
+
+<section class="card">
+    <div class="section-head">
+        <h1>Período</h1>
+        <span class="badge badge-neutral">{{ start|date:'d/m/Y' }} até {{ end|date:'d/m/Y' }}</span>
+    </div>
+
+    {% if sorted_days %}
+        <div class="agenda-days">
+            {% for day, tasks in sorted_days %}
+                <article class="agenda-day">
+                    <div class="agenda-date">{{ day|date:'l, d/m/Y' }}</div>
+                    <ul class="item-list compact-list">
+                        {% for task in tasks %}
+                            <li>
+                                <div>
+                                    <a href="{% url 'task_detail' task.id %}" class="table-link">{{ task.title }}</a>
+                                    <small>{{ task.subject }} • {{ task.author.first_name|default:task.author.username }}</small>
+                                </div>
+                                <div class="agenda-badges">
+                                    <span class="badge priority-{{ task.priority }}">{{ task.get_priority_display }}</span>
+                                    <span class="badge status-{{ task.status }}">{{ task.get_status_display }}</span>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </article>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="muted">Nenhuma tarefa agendada para os próximos 30 dias.</p>
+    {% endif %}
+</section>
+{% endblock %}
